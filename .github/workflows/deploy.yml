@@ -76,7 +76,7 @@ jobs:
       - name: Calculate SHA256 for Linux binary
         id: sha256_bin
         run: |
-          URL="https://github.com/meowrch/HotkeyHub/releases/download/v${{ steps.get_version.outputs.version }}/hotkeyhub-x86_64"
+          URL="https://github.com/meowrch/HotkeyHub/releases/download/v${{ steps.get_version.outputs.version }}/hotkeyhub-linux-x86_64"
           echo "Downloading from: $URL"
           for i in {1..5}; do
             HASH=$(curl -sL "$URL" | sha256sum | cut -d' ' -f1)
@@ -91,10 +91,8 @@ jobs:
 
       - name: Update PKGBUILD.bin
         run: |
-          sed -i \
-            -e "s/^pkgver=.*/pkgver=${{ steps.get_version.outputs.version }}/" \
-            -e "s/^sha256sums=.*/sha256sums=('${{ steps.sha256_bin.outputs.hash }}')/" \
-            PKGBUILD.bin
+          sed -i "s/^pkgver=.*/pkgver=${{ steps.get_version.outputs.version }}/" PKGBUILD.bin
+          sed -i "s/^sha256sums=.*/sha256sums=('${{ steps.sha256_bin.outputs.hash }}')/" PKGBUILD.bin
           
           echo "=== Updated PKGBUILD.bin ==="
           cat PKGBUILD.bin
