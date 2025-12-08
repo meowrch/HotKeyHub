@@ -1,5 +1,7 @@
 <div align="center">
 
+![app preview](.meta/hotkeyhub-preview.png)
+
 # ⌨️ HotkeyHub
 
 ### *Ваши горячие клавиши в одном окне*

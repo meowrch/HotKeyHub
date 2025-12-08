@@ -1,5 +1,7 @@
 <div align="center">
 
+![app preview](.meta/hotkeyhub-preview.png)
+
 # ⌨️ HotkeyHub
 
 ### *Your keybinds in one window*
