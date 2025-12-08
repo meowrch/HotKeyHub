@@ -1,0 +1,10 @@
+[package]
+name = "hotkeyhub"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gtk4 = "0.7"
+regex = "1"
+dirs = "5.0"
+glob = "0.3"

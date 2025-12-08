@@ -1,0 +1,104 @@
+name: Release and AUR Deployment
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  # Сборка бинарников (только при релизе)
+  build-binaries:
+    if: github.event_name == 'release'
+    name: Build for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: hotkeyhub
+            asset_name: hotkeyhub-linux-x86_64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev pkg-config
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
+
+
+  # Деплой бинарной версии на AUR (при релизе)
+  deploy-aur-bin:
+    if: github.event_name == 'release'
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get release version
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Wait for release assets to be available
+        run: |
+          echo "Waiting for release assets to be uploaded..."
+          sleep 30
+
+      - name: Calculate SHA256 for Linux binary
+        id: sha256_bin
+        run: |
+          URL="https://github.com/meowrch/HotkeyHub/releases/download/v${{ steps.get_version.outputs.version }}/hotkeyhub-x86_64"
+          echo "Downloading from: $URL"
+          for i in {1..5}; do
+            HASH=$(curl -sL "$URL" | sha256sum | cut -d' ' -f1)
+            if [ ! -z "$HASH" ]; then
+              echo "Binary SHA256: $HASH"
+              echo "hash=$HASH" >> $GITHUB_OUTPUT
+              break
+            fi
+            echo "Retry $i/5..."
+            sleep 10
+          done
+
+      - name: Update PKGBUILD.bin
+        run: |
+          sed -i \
+            -e "s/^pkgver=.*/pkgver=${{ steps.get_version.outputs.version }}/" \
+            -e "s/^sha256sums=.*/sha256sums=('${{ steps.sha256_bin.outputs.hash }}')/" \
+            PKGBUILD.bin
+          
+          echo "=== Updated PKGBUILD.bin ==="
+          cat PKGBUILD.bin
+
+      - name: Prepare PKGBUILD
+        run: cp PKGBUILD.bin PKGBUILD
+
+      - name: Deploy hotkeyhub-bin to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@v3
+        with:
+          pkgname: hotkeyhub-bin
+          pkgbuild: ./PKGBUILD
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_KEY }}
+          commit_message: "Binary release v${{ steps.get_version.outputs.version }}"
+
