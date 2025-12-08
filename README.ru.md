@@ -7,9 +7,9 @@
 
 <br>
 
-[![Issues](https://img.shields.io/github/issues/meowrch/HotkeyHub?color=ffb29b&labelColor=1C2325&style=for-the-badge)](https://github.com/meowrch/HotkeyHub/issues)
-[![Stars](https://img.shields.io/github/stars/meowrch/HotkeyHub?color=fab387&labelColor=1C2325&style=for-the-badge)](https://github.com/meowrch/HotkeyHub/stargazers)
-[![License](https://img.shields.io/github/license/meowrch/HotkeyHub?color=FCA2AA&labelColor=1C2325&style=for-the-badge)](./LICENSE)
+[![Issues](https://img.shields.io/github/issues/meowrch/HotKeyHub?color=ffb29b&labelColor=1C2325&style=for-the-badge)](https://github.com/meowrch/HotKeyHub/issues)
+[![Stars](https://img.shields.io/github/stars/meowrch/HotKeyHub?color=fab387&labelColor=1C2325&style=for-the-badge)](https://github.com/meowrch/HotKeyHub/stargazers)
+[![License](https://img.shields.io/github/license/meowrch/HotKeyHub?color=FCA2AA&labelColor=1C2325&style=for-the-badge)](./LICENSE)
 
 [![README RU](https://img.shields.io/badge/README-RU-blue?color=cba6f7&labelColor=cba6f7&style=for-the-badge)](./README.ru.md)
 [![README ENG](https://img.shields.io/badge/README-ENG-blue?color=C9CBFF&labelColor=1C2325&style=for-the-badge)](./README.md)
