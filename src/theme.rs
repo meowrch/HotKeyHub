@@ -58,6 +58,20 @@ pub fn generate_css(theme: &Theme) -> String {
             padding: 12px;
             border-radius: 8px;
             border: 1px solid {border};
+            position: relative;
+        }}
+        
+        .info-icon {{
+            color: {text};
+            font-size: 1.1em;
+            padding: 2px 4px;
+            cursor: help;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }}
+        
+        .info-icon:hover {{
+            opacity: 1;
         }}
         
         .keycap {{
@@ -80,7 +94,17 @@ pub fn generate_css(theme: &Theme) -> String {
             border-bottom-color: shade({accent}, 0.8);
         }}
         
-        .command {{ color: alpha({text}, 0.7); margin-top: 8px; font-size: 0.9em; }}
+        .command {{ 
+            color: alpha({text}, 0.7); 
+            margin-top: 8px; 
+            font-size: 0.9em;
+            cursor: text;
+        }}
+        
+        .command:selected {{
+            background: alpha({accent}, 0.3);
+        }}
+        
         .plus {{ color: alpha({text}, 0.5); margin: 0 4px; font-weight: bold; }}
         "#,
         bg = theme.background,

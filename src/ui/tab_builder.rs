@@ -12,7 +12,7 @@ pub fn create_tab_page(binds: Vec<Keybind>) -> (GtkBox, SearchEntry, ScrolledWin
     container.add_css_class("tab-container");
 
     let search_entry = SearchEntry::builder()
-        .placeholder_text("Search keybinds, commands...")
+        .placeholder_text("Search keybinds, commands, descriptions...")
         .margin_bottom(15)
         .build();
     search_entry.add_css_class("search-bar");
@@ -37,8 +37,15 @@ pub fn create_tab_page(binds: Vec<Keybind>) -> (GtkBox, SearchEntry, ScrolledWin
         let card = GtkBox::new(Orientation::Vertical, 6);
         card.add_css_class("bind-card");
 
+        // Main row with keys and info icon on the same level
+        let main_row = GtkBox::new(Orientation::Horizontal, 0);
+        main_row.set_hexpand(true);
+        main_row.set_valign(gtk4::Align::Center);
+
+        // Keys box on the left
         let keys_box = GtkBox::new(Orientation::Horizontal, 0);
         keys_box.set_halign(gtk4::Align::Start);
+        keys_box.set_valign(gtk4::Align::Center);
 
         for (i, modifier) in bind.mods.iter().enumerate() {
             if i > 0 {
@@ -65,21 +72,47 @@ pub fn create_tab_page(binds: Vec<Keybind>) -> (GtkBox, SearchEntry, ScrolledWin
             };
 
         keys_box.append(&create_keycap(&key_display, false));
+        
+        main_row.append(&keys_box);
 
-        card.append(&keys_box);
+        // Spacer to push info icon to the right
+        let spacer = GtkBox::new(Orientation::Horizontal, 0);
+        spacer.set_hexpand(true);
+        main_row.append(&spacer);
 
+        // Info icon on the right (same level as keys)
+        if let Some(desc) = &bind.description {
+            let info_icon = Label::new(Some("🛈"));
+            info_icon.set_tooltip_text(Some(desc));
+            info_icon.add_css_class("info-icon");
+            info_icon.set_halign(gtk4::Align::End);
+            info_icon.set_valign(gtk4::Align::Center);
+            main_row.append(&info_icon);
+        }
+
+        card.append(&main_row);
+
+        // Command label - selectable for copying
         let lbl_cmd = Label::new(Some(&bind.command));
         lbl_cmd.set_wrap(true);
         lbl_cmd.set_max_width_chars(35);
         lbl_cmd.set_xalign(0.0);
+        lbl_cmd.set_selectable(true);
         lbl_cmd.add_css_class("command");
         card.append(&lbl_cmd);
 
         let child = FlowBoxChild::new();
         child.set_child(Some(&card));
 
-        let search_string =
-            format!("{} {} {}", bind.mods.join(" "), bind.key, bind.command).to_lowercase();
+        // Include description in search string
+        let search_string = format!(
+            "{} {} {} {}",
+            bind.mods.join(" "),
+            bind.key,
+            bind.command,
+            bind.description.as_deref().unwrap_or("")
+        )
+        .to_lowercase();
         child.set_widget_name(&search_string);
 
         flow_box.insert(&child, -1);
