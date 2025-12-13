@@ -78,9 +78,20 @@ pub fn parse_hyprland_recursive(path: PathBuf, ctx: &mut HyprContext, binds: &mu
         }
 
         if let Some(caps) = re_bind.captures(line) {
-            let content = caps[1].split('#').next().unwrap_or("").trim();
+            let full_content = caps[1].trim();
+            
+            // Check if this is a bindd variant (with description)
+            let bind_type = line.split('=').next().unwrap_or("").trim();
+            let has_description = bind_type.starts_with("bindd");
+            
+            let content = full_content.split('#').next().unwrap_or("").trim();
             let parts: Vec<&str> = content.split(',').map(|s| s.trim()).collect();
-            if parts.len() < 3 {
+            
+            // For bindd: mods, key, description, dispatcher, [args...]
+            // For regular bind: mods, key, dispatcher, [args...]
+            let min_parts = if has_description { 4 } else { 3 };
+            
+            if parts.len() < min_parts {
                 continue;
             }
 
@@ -108,9 +119,16 @@ pub fn parse_hyprland_recursive(path: PathBuf, ctx: &mut HyprContext, binds: &mu
                 }
             }
             
-            let dispatcher = parts[2];
-            let arg = if parts.len() > 3 {
-                parts[3..].join(", ")
+            let description = if has_description {
+                Some(parts[2].to_string())
+            } else {
+                None
+            };
+            
+            let dispatcher_idx = if has_description { 3 } else { 2 };
+            let dispatcher = parts[dispatcher_idx];
+            let arg = if parts.len() > dispatcher_idx + 1 {
+                parts[dispatcher_idx + 1..].join(", ")
             } else {
                 String::new()
             };
@@ -125,6 +143,7 @@ pub fn parse_hyprland_recursive(path: PathBuf, ctx: &mut HyprContext, binds: &mu
                 mods: mods_list,
                 key,
                 command: display_cmd,
+                description,
             });
         }
     }

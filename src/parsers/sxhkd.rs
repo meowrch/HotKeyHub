@@ -56,6 +56,19 @@ pub fn parse_sxhkd(path: PathBuf) -> Vec<Keybind> {
         let mut line = lines[i].trim().to_string();
         i += 1;
 
+        // Check for description comment
+        let mut description: Option<String> = None;
+        if line.starts_with("# Description:") {
+            description = Some(line.trim_start_matches("# Description:").trim().to_string());
+            // Move to next line (the actual keybind)
+            if i < lines.len() {
+                line = lines[i].trim().to_string();
+                i += 1;
+            } else {
+                continue;
+            }
+        }
+
         if line.is_empty() || line.starts_with('#') {
             continue;
         }
@@ -130,6 +143,7 @@ pub fn parse_sxhkd(path: PathBuf) -> Vec<Keybind> {
                 mods,
                 key,
                 command: cmd.clone(),
+                description: description.clone(),
             });
         }
     }

@@ -6,6 +6,7 @@ pub struct Keybind {
     pub mods: Vec<String>,
     pub key: String,
     pub command: String,
+    pub description: Option<String>,
 }
 
 /// Режим работы приложения
