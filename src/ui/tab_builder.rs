@@ -2,8 +2,8 @@ use crate::models::Keybind;
 use crate::ui::widgets::{create_keycap, get_modifier_display};
 use gtk4::prelude::*;
 use gtk4::{
-    Box as GtkBox, FlowBox, FlowBoxChild, Label, Orientation, ScrolledWindow, SearchEntry,
-    SelectionMode,
+    Box as GtkBox, Button, FlowBox, FlowBoxChild, Label, Orientation, Popover, ScrolledWindow,
+    SearchEntry, SelectionMode,
 };
 
 /// Creates a tab page with keybinds table and search
@@ -72,7 +72,7 @@ pub fn create_tab_page(binds: Vec<Keybind>) -> (GtkBox, SearchEntry, ScrolledWin
             };
 
         keys_box.append(&create_keycap(&key_display, false));
-        
+
         main_row.append(&keys_box);
 
         // Spacer to push info icon to the right
@@ -80,13 +80,32 @@ pub fn create_tab_page(binds: Vec<Keybind>) -> (GtkBox, SearchEntry, ScrolledWin
         spacer.set_hexpand(true);
         main_row.append(&spacer);
 
-        // Info icon on the right (same level as keys)
+        // Info icon on the right (same level as keys) - now clickable
         if let Some(desc) = &bind.description {
             let info_icon = Label::new(Some("🛈"));
-            info_icon.set_tooltip_text(Some(desc));
             info_icon.add_css_class("info-icon");
             info_icon.set_halign(gtk4::Align::End);
             info_icon.set_valign(gtk4::Align::Center);
+
+            // Create popover with description
+            let popover = Popover::new();
+            let desc_label = Label::new(Some(desc));
+            desc_label.set_wrap(true);
+            desc_label.set_max_width_chars(40);
+            desc_label.set_margin_start(12);
+            desc_label.set_margin_end(12);
+            desc_label.set_margin_top(8);
+            desc_label.set_margin_bottom(8);
+            popover.set_child(Some(&desc_label));
+            popover.set_parent(&info_icon);
+
+            // Add click gesture to label
+            let gesture = gtk4::GestureClick::new();
+            gesture.connect_released(move |_, _, _, _| {
+                popover.popup();
+            });
+            info_icon.add_controller(gesture);
+
             main_row.append(&info_icon);
         }
 
