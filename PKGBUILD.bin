@@ -9,10 +9,16 @@ license=('GPL-3.0-or-later')
 depends=('gtk4')
 source=(
   "$url/releases/download/v$pkgver/hotkeyhub-linux-x86_64"
+  "$url/releases/download/v$pkgver/hotkeyhub.desktop"
+  "$url/releases/download/v$pkgver/hotkeyhub.png"
 )
-sha256sums=('SKIP')
+sha256sums=('SKIP' 'SKIP' 'SKIP')
 
 package() {
   # Install binary
   install -Dm755 hotkeyhub-linux-x86_64 "$pkgdir/usr/bin/hotkeyhub"
+
+  # Install app info
+  install -Dm644 "hotkeyhub.desktop" "$pkgdir/usr/share/applications/hotkeyhub.desktop"
+  install -Dm644 "hotkeyhub.png" "$pkgdir/usr/share/pixmaps/hotkeyhub.png"
 }

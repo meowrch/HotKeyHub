@@ -43,7 +43,7 @@ fn main() {
     let app = Application::builder()
         .application_id("com.meowrch.HotkeyHub")
         .build();
-
+    
     app.connect_activate(move |app| {
         ui::build_ui(app, &mode);
     });

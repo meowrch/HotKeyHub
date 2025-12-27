@@ -47,7 +47,7 @@ jobs:
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Upload binaries to release
+      - name: Upload binary to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -55,6 +55,23 @@ jobs:
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
 
+      # Загрузка .desktop файла
+      - name: Upload desktop file to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: hotkeyhub.desktop
+          asset_name: hotkeyhub.desktop
+          tag: ${{ github.ref }}
+
+      # Загрузка иконки
+      - name: Upload icon to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: hotkeyhub.png
+          asset_name: hotkeyhub.png
+          tag: ${{ github.ref }}
 
   # Деплой бинарной версии на AUR (при релизе)
   deploy-aur-bin:
@@ -73,16 +90,26 @@ jobs:
           echo "Waiting for release assets to be uploaded..."
           sleep 30
 
-      - name: Calculate SHA256 for Linux binary
-        id: sha256_bin
+      - name: Calculate SHA256 checksums
+        id: sha256
         run: |
-          URL="https://github.com/meowrch/HotkeyHub/releases/download/v${{ steps.get_version.outputs.version }}/hotkeyhub-linux-x86_64"
-          echo "Downloading from: $URL"
+          URL_BIN="https://github.com/meowrch/HotkeyHub/releases/download/v${{ steps.get_version.outputs.version }}/hotkeyhub-linux-x86_64"
+          URL_DESKTOP="https://github.com/meowrch/HotkeyHub/releases/download/v${{ steps.get_version.outputs.version }}/hotkeyhub.desktop"
+          URL_PNG="https://github.com/meowrch/HotkeyHub/releases/download/v${{ steps.get_version.outputs.version }}/hotkeyhub.png"
+          
+          echo "Downloading and calculating checksums..."
           for i in {1..5}; do
-            HASH=$(curl -sL "$URL" | sha256sum | cut -d' ' -f1)
-            if [ ! -z "$HASH" ]; then
-              echo "Binary SHA256: $HASH"
-              echo "hash=$HASH" >> $GITHUB_OUTPUT
+            HASH_BIN=$(curl -sL "$URL_BIN" | sha256sum | cut -d' ' -f1)
+            HASH_DESKTOP=$(curl -sL "$URL_DESKTOP" | sha256sum | cut -d' ' -f1)
+            HASH_PNG=$(curl -sL "$URL_PNG" | sha256sum | cut -d' ' -f1)
+            
+            if [ ! -z "$HASH_BIN" ] && [ ! -z "$HASH_DESKTOP" ] && [ ! -z "$HASH_PNG" ]; then
+              echo "Binary SHA256: $HASH_BIN"
+              echo "Desktop SHA256: $HASH_DESKTOP"
+              echo "PNG SHA256: $HASH_PNG"
+              echo "hash_bin=$HASH_BIN" >> $GITHUB_OUTPUT
+              echo "hash_desktop=$HASH_DESKTOP" >> $GITHUB_OUTPUT
+              echo "hash_png=$HASH_PNG" >> $GITHUB_OUTPUT
               break
             fi
             echo "Retry $i/5..."
@@ -92,7 +119,7 @@ jobs:
       - name: Update PKGBUILD.bin
         run: |
           sed -i "s/^pkgver=.*/pkgver=${{ steps.get_version.outputs.version }}/" PKGBUILD.bin
-          sed -i "s/^sha256sums=.*/sha256sums=('${{ steps.sha256_bin.outputs.hash }}')/" PKGBUILD.bin
+          sed -i "s/^sha256sums=.*/sha256sums=('${{ steps.sha256.outputs.hash_bin }}' '${{ steps.sha256.outputs.hash_desktop }}' '${{ steps.sha256.outputs.hash_png }}')/" PKGBUILD.bin
           
           echo "=== Updated PKGBUILD.bin ==="
           cat PKGBUILD.bin
@@ -109,4 +136,3 @@ jobs:
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_KEY }}
           commit_message: "Binary release v${{ steps.get_version.outputs.version }}"
-

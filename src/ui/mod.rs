@@ -18,7 +18,8 @@ use std::time::SystemTime;
 pub fn build_ui(app: &Application, run_mode: &RunMode) {
     let window = ApplicationWindow::builder()
         .application(app)
-        .title("Keybinds Viewer")
+        .title("HotKeyHub")
+        .icon_name("hotkeyhub")
         .default_width(1100)
         .default_height(800)
         .build();

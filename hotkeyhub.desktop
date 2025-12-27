@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=HotKey Hub
+Comment=Keyboard shortcuts reference for Hyprland
+Exec=hotkeyhub
+Icon=hotkeyhub
+Terminal=false
+Type=Application
+Categories=Utility;GTK;
+Keywords=shortcuts;keybindings;hyprland;
