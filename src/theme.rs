@@ -53,12 +53,23 @@ pub fn generate_css(theme: &Theme) -> String {
             border-radius: 8px;
         }}
         
-        .bind-card {{
+        flowboxchild {{
             background: {bg_alt};
+            padding: 0;
+            margin: 0;
+            border: 1px solid {border};
+            border-radius: 10px;
+        }}
+        
+        flowboxchild.flow-child-active {{
+            background: {bg_alt};
+            border: 1px solid {accent};
+        }}
+        
+        .bind-card {{
+            background: transparent;
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid {border};
-            position: relative;
         }}
         
         .info-icon {{

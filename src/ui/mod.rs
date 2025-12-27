@@ -144,12 +144,12 @@ pub fn build_ui(app: &Application, run_mode: &RunMode) {
     let search_entries_clone = search_entries.clone();
     let scrolled_windows_clone = scrolled_windows.clone();
 
-    key_controller.connect_key_pressed(move |_, keyval, _keycode, state| {
+    key_controller.connect_key_pressed(move |_, keyval, keycode, state| {
         let ctrl_pressed = state.contains(gdk::ModifierType::CONTROL_MASK);
         let alt_pressed = state.contains(gdk::ModifierType::ALT_MASK);
 
-        // Ctrl+F: Focus search
-        if ctrl_pressed && keyval == gdk::Key::f {
+        // Ctrl+F: Focus search - use keycode for layout independence
+        if ctrl_pressed && keycode == 41 {
             if let Some(notebook) = notebook_weak.upgrade() {
                 if let Some(current_page) = notebook.current_page() {
                     if let Some(search) = search_entries_clone.borrow().get(current_page as usize) {
